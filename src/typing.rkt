@@ -1,5 +1,5 @@
 #lang racket
-(require redex/reduction-semantics "grammar.rkt")
+(require redex/reduction-semantics "grammar.rkt" "env.rkt")
 (provide (all-defined-out))
 
 (define-judgment-form simple-sub
@@ -23,14 +23,14 @@
   [(has-type Env Expr_f Env_f Ty_f)
    (has-type Env_f Expr_a Env_a Ty_a)
    (where/error (Id_fresh Env_fresh) (env-with-fresh-var Env_a))
-   (constrain Env_fresh Ty_f (Ty_a -> Id_fresh) Env_out)
+   (where Env_out (constrain Env_fresh Ty_f (Ty_a -> Id_fresh)))
    ---------------
    (has-type Env (Expr_f Expr_a) Env_out Id_fresh)
    ]
 
   [(has-type Env Expr_o Env_o Ty_o)
    (where/error (Id_fresh Env_fresh) (env-with-fresh-var Env_o))
-   (constrain Env_fresh Ty_o (struct ((FieldId Id_fresh))) Env_out)
+   (where Env_out (constrain Env_fresh Ty_o (struct ((FieldId Id_fresh)))))
    ---------------
    (has-type Env (Expr_o -> FieldId) Env_out Id_fresh)
    ]
@@ -51,93 +51,166 @@
    ]
   )
 
-(define-judgment-form simple-sub
+(define-metafunction simple-sub
   ;; Constrains `Ty_0` to be a subtype of `Ty_1`, yielding a
   ;; new environment (`Env_out`) that may contain additional bounds.
-  #:mode (constrain I I I O)
-  #:contract (constrain Env_in Ty_0 Ty_1 Env_out)
+  constrain : Env_in (Ty_0 <= Ty_1) -> Env_out or Error
 
-  [---------------
-   (constrain Env Int Int Env)
+  [(constrain Env (Ty <= Ty)) Env]
+
+  [(constrain Env ((Ty_arg0 -> Ty_ret0) <= (Ty_arg1 -> Ty_ret1)))
+   (constrain Env_arg (Ty_ret0 <= Ty_ret1) Env_ret)
+   (where Env_arg (constrain Env (Ty_arg1 <= Ty_arg0) Env_arg))
    ]
 
-  [(constrain Env Ty_arg1 Ty_arg0 Env_arg)
-   (constrain Env_arg Ty_ret0 Ty_ret1 Env_ret)
-   ---------------
-   (constrain Env (Ty_arg0 -> Ty_ret0) (Ty_arg1 -> Ty_ret1) Env_ret)
+  [(constrain Env ((Ty_arg0 -> Ty_ret0) <= (Ty_arg1 -> Ty_ret1)))
+   Error
+   (where Error (constrain Env (Ty_arg1 <= Ty_arg0)))
    ]
 
-  [(constrain-fields Env FieldTys_0 FieldTys_1 Env_out)
-   ---------------
-   (constrain Env (struct FieldTys_0) (struct FieldTys_1) Env_out)
+  [(constrain Env ((struct FieldTys_0) <= (struct FieldTys_1)))
+   (constrain-fields Env (FieldTys_0 <= FieldTys_1))
    ]
 
-  [(where (_ ... Ty _ ...)  (env-upper-bounds Env Id))
-   ---------------
-   (constrain Env Id Ty Env)
-   ]
+  [(constrain Env (Id <= Ty))
+   Env
+   (where (_ ... Ty _ ...)  (env-upper-bounds Env Id))]
 
-  [(where Env_a (env-with-fresh-bound (Id <= Ty) Env))
+  [(constrain Env (Id <= Ty))
+   (constrain-all Env_a (Tys_lb <= (Ty)))
+   (where/error Env_a (env-with-fresh-bound Env (Id <= Ty)))
    (where/error Tys_lb (env-lower-bounds Env_a Id))
-   (constrain-all Env_a Tys_lb (Ty) Env_out)
-   ---------------
-   (constrain Env Id Ty Env_out)
    ]
 
-  [(where (_ ... Ty _ ...)  (env-lower-bounds Env Id))
-   ---------------
-   (constrain Env Ty Id Env)
-   ]
+  [(constrain Env (Ty <= Id))
+   Env
+   (where (_ ... Ty _ ...)  (env-lower-bounds Env Id))]
 
-  [(where Env_a (env-with-fresh-bound (Id >= Ty) Env))
-   (where/error Tys_ub (env-upper-bounds Env_a Id))
-   (constrain-all Env_a (Ty) Tys_ub Env_out)
-   ---------------
-   (constrain Env Id Ty Env_out)
-   ]
+  [(constrain Env (Ty <= Id))
+   (constrain-all Env_a ((Ty) <= Tys_ub))
+   (where/error Env_a (env-with-fresh-bound Env (Id >= Ty)))
+   (where/error Tys_ub (env-upper-bounds Env_a Id))]
+
+  [(constrain Env (_ <= _))
+   Error]
 
   )
 
-(define-judgment-form simple-sub
-  #:mode (constrain-fields I I I O)
-  #:contract (constrain-fields Env_in FieldTys_0 FieldTys_1 Env_out)
+(define-metafunction simple-sub
+  constrain-fields : Env_in (FieldTys_0 <= FieldTys_1) -> Env_out or Error
 
-  [---------------
-   (constrain-fields Env () _ Env)]
+  [(constrain-fields Env (() <= _))
+   Env]
 
-  [(where (_ ... (Field Ty_1) _ ...) FieldTys_1)
-   (constrain Env Ty_0 Ty_1 Env_f)
-   (constrain-fields Env_f (FieldTy_rest ...) FieldTys_1 Env_out)
-   ---------------
-   (constrain-fields Env ((Field Ty_0) FieldTy_rest ...) FieldTys_1 Env_out)]
+  [(constrain-fields Env (((Field Ty_0) FieldTy_rest ...) <= FieldTys_1))
+   (constrain-fields Env_f (FieldTy_rest ...) FieldTys_1)
+   (where (_ ... (Field Ty_1) _ ...) FieldTys_1)
+   (where Env_out (constrain Env Ty_0 Ty_1 Env_f))
+   ]
+
+  [(constrain-fields Env (((Field Ty_0) FieldTy_rest ...) <= FieldTys_1))
+   Error]
+
   )
 
-(define-judgment-form simple-sub
-  ;; Constraints each `Ty_0` to be a subtype of each `Ty_1`.
-  ;;
-  ;; For now assumes one of the lists has length at most 1.
-  #:mode (constrain-all I I I O)
-  #:contract (constrain-all Env_in Tys_0 Tys_1 Env_out)
+(define-metafunction simple-sub
+  constrain-all : Env_in (Tys_0 <= Tys_1) -> Env or Error
 
-  [---------------
-   (constrain-all Env () _ Env)]
+  [(constrain-all Env (() <= _)) Env]
 
-  [---------------
-   (constrain-all Env _ () Env)]
+  [(constrain-all Env (_ <= ())) Env]
 
-  [(constrain Env Ty_first Ty_1 Env_f)
-   (constrain-all Env_f (Ty_rest ...) (Ty_1) Env_out)
-   ---------------
-   (constrain-all Env (Ty_first Ty_rest ...) (Ty_1) Env_out)]
+  [(constrain-all Env ((Ty_first Ty_rest ...) <= (Ty_1)))
+   (constrain-all Env_f ((Ty_rest ...) <= (Ty_1)))
+   (where Env_f (constrain Env (Ty_first <= Ty_1)))
+   ]
 
-  [(constrain Env Ty_0 Ty_first Env_f)
-   (constrain-all Env_f (Ty_0) (Ty_rest ...) Env_out)
-   ---------------
-   (constrain-all Env (Ty_0) (Ty_first Ty_rest ...) Env_out)]
+  [(constrain-all Env ((Ty_0) <= (Ty_first Ty_rest ...)))
+   (constrain-all Env_f ((Ty_0) <= (Ty_rest ...)))
+   (where Env_f (constrain Env (Ty_0 <= Ty_first)))
+   ]
+
+  [(constrain-all Env (_ <= _))
+   Error]
   )
 
 (module+ test
-  (test-match simple-sub
-              Goal
-              (term (All ())))
+
+  (redex-let*
+   simple-sub
+   [(Env (term EmptyEnv))]
+   (test-equal
+    (judgment-holds (has-type
+                     Env
+                     22
+                     Env_out
+                     Ty_out)
+                    (Env_out Ty_out))
+    (term ((Env Int))))
+   )
+
+  (redex-let*
+   simple-sub
+   [((Id_0 Env_0) (term (env-with-fresh-var EmptyEnv)))
+    ((Id_1 Env_1) (term (env-with-fresh-var Env_0)))
+    (Env_2 (term (constrain Env_1 (Id_0 <= Id_1))))
+    ]
+   (test-equal
+    (term (env-lower-bounds Env_2 Id_1))
+    (term ()))
+
+   (test-equal
+    (term (env-upper-bounds Env_2 Id_0))
+    (term (Id_1)))
+   )
+
+  (redex-let*
+   simple-sub
+   [((Id_0 Env_0) (term (env-with-fresh-var EmptyEnv)))
+    ((Id_1 Env_1) (term (env-with-fresh-var Env_0)))
+    ((Id_2 Env_2) (term (env-with-fresh-var Env_1)))
+    ((Id_3 Env_3) (term (env-with-fresh-var Env_2)))
+    (Env_4 (term (constrain Env_3 (Id_0 <= Id_1))))
+    (Env_5 (term (constrain Env_4 (Id_0 <= Id_2))))
+    (Env_6 (term (constrain Env_5 (Id_3 <= Id_0))))
+    ]
+   (test-equal
+    (term (env-lower-bounds Env_6 Id_3))
+    (term ()))
+
+   (test-equal
+    (term (env-upper-bounds Env_6 Id_3))
+    (term (Id_0)))
+
+   (test-equal
+    (term (env-upper-bounds Env_6 Id_0))
+    (term (Id_2 Id_1)))
+
+   (test-equal
+    (term (env-lower-bounds Env_6 Id_0))
+    (term ()))
+
+   (test-equal
+    (term (env-lower-bounds Env_6 Id_2))
+    (term ()))
+
+   (redex-let*
+    simple-sub
+    [(Env_7 (term (constrain Env_6 (Int <= Id_0))))
+     ]
+
+    (test-equal
+     (term (env-lower-bounds Env_7 Id_0))
+     (term (Int)))
+    (test-equal
+     (term (env-lower-bounds Env_7 Id_1))
+     (term (Int)))
+    (test-equal
+     (term (env-lower-bounds Env_7 Id_2))
+     (term (Int)))
+    (test-equal
+     (term (env-lower-bounds Env_7 Id_3))
+     (term ()))
+    )
+   )
   )

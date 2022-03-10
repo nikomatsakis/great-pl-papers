@@ -53,7 +53,7 @@
    (where #f (equal-terms Tys_upper0 Tys_upper1))
    ]
 
-  [(env-with-fresh-bound Env (Ty <= Id))
+  [(env-with-fresh-bound Env (Id >= Ty))
    (IdTys (BoundedId_0 ... (Id Tys_lower1 Tys_upper) BoundedId_1 ...))
 
    (where/error (IdTys (BoundedId_0 ... (Id Tys_lower0 Tys_upper) BoundedId_1 ...)) Env)
