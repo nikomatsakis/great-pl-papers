@@ -5,12 +5,24 @@
 (define-term EmptyEnv (() ()))
 
 (define-metafunction simple-sub
+  ;; introduce (and return) a fresh type variable with no bounds
   env-with-fresh-var : Env -> (Id Env)
 
   [(env-with-fresh-var Env)
    (Id_fresh (IdTys ((Id_fresh () ()) BoundedId ...)))
    (where/error Id_fresh ,(variable-not-in (term Env) 'X))
    (where/error (IdTys (BoundedId ...)) Env)
+   ]
+  )
+
+(define-metafunction simple-sub
+  ;; introduce (and return) a let bound variable with the given type;
+  ;; it is added to the front of the list (imp't for shadowing)
+  env-with-let-var : Env Id Ty -> Env
+
+  [(env-with-let-var Env Id Ty)
+   (((Id Ty) IdTy ...) BoundedIds)
+   (where/error ((IdTy ...) BoundedIds) Env)
    ]
   )
 

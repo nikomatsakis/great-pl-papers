@@ -23,16 +23,26 @@
   [(has-type Env Expr_f Env_f Ty_f)
    (has-type Env_f Expr_a Env_a Ty_a)
    (where/error (Id_fresh Env_fresh) (env-with-fresh-var Env_a))
-   (where Env_out (constrain Env_fresh Ty_f (Ty_a -> Id_fresh)))
+   (where Env_out (constrain Env_fresh (Ty_f <= (Ty_a -> Id_fresh))))
    ---------------
    (has-type Env (Expr_f Expr_a) Env_out Id_fresh)
    ]
 
   [(has-type Env Expr_o Env_o Ty_o)
    (where/error (Id_fresh Env_fresh) (env-with-fresh-var Env_o))
-   (where Env_out (constrain Env_fresh Ty_o (struct ((FieldId Id_fresh)))))
+   (where Env_out (constrain Env_fresh (Ty_o <= (struct ((FieldId Id_fresh))))))
    ---------------
    (has-type Env (Expr_o -> FieldId) Env_out Id_fresh)
+   ]
+
+  [(where/error (Id_fresh Env_fresh) (env-with-fresh-var Env))
+   (where/error Env_arg (env-with-let-var Env_fresh Id_arg Id_fresh))
+   (has-type Env_arg Expr_body Env_body Ty_body)
+   (where/error (_ BoundedIds_out) Env_body)
+   (where/error (IdTys_out _) Env)
+   (where/error Ty_out (Id_fresh -> Ty_body))
+   ---------------
+   (has-type Env (Lambda Id_arg -> Expr_body) (IdTys_out BoundedIds_out) Ty_out)
    ]
   )
 
