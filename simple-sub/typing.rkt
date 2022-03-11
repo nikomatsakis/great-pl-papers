@@ -2,6 +2,20 @@
 (require redex/reduction-semantics "grammar.rkt" "env.rkt")
 (provide (all-defined-out))
 
+(define-metafunction simple-sub
+  type-of-expr : Env Expr -> (Env Ty)
+
+  [(type-of-expr Env Expr)
+   (Env_out Ty_out)
+   (where ((Env_out Ty_out)) ,(judgment-holds (has-type
+                                               Env
+                                               Expr
+                                               Env_out
+                                               Ty_out)
+                                              (Env_out Ty_out)))
+   ]
+  )
+
 (define-judgment-form simple-sub
   #:mode (has-type I I O O)
   #:contract (has-type Env Expr Env Ty)

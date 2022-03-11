@@ -23,9 +23,17 @@
 
   [(env-with-fresh-var Env)
    (Id_fresh (IdTys ((Id_fresh () ()) BoundedId ...)))
-   (where/error Id_fresh ,(variable-not-in (term Env) 'X))
+   (where/error Id_fresh (fresh-var Env))
    (where/error (IdTys (BoundedId ...)) Env)
    ]
+  )
+
+(define-metafunction simple-sub
+  ;; introduce (and return) a fresh type variable with no bounds
+  fresh-var : any -> Id
+
+  [(fresh-var any)
+   ,(variable-not-in (term any) 'X)]
   )
 
 (define-metafunction simple-sub
@@ -64,6 +72,13 @@
    Tys_lower
    (where/error (Tys_lower Tys_upper) (env-bounds Env Id))
    ]
+  )
+
+(define-metafunction simple-sub
+  env-polar-bounds : Env Id Polarity -> Tys
+
+  [(env-polar-bounds Env Id +) (env-lower-bounds Env Id)]
+  [(env-polar-bounds Env Id -) (env-upper-bounds Env Id)]
   )
 
 (define-metafunction simple-sub

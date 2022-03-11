@@ -3,6 +3,7 @@
 (provide (all-defined-out))
 
 (define-language simple-sub
+  (Exprs := (Expr ...))
   (Expr :=
         Id
         number
@@ -13,6 +14,29 @@
         (Let Id = Expr in Expr)
         )
 
+  (UserTys := (UserTy ...))
+  (UserTy :=
+          ⊤
+          ⊥
+          (⨆ UserTy UserTy)
+          (⊓ UserTy UserTy)
+          (UserTy -> UserTy)
+          (Tuple UserTys)
+          (μ Id Type)
+          Id
+          Int
+          )
+
+  (Polarity := + -)
+
+  ; PolarId: a type variable and a polarity
+  (PolarIds := (PolarId ...))
+  (PolarId := (Polarity Id))
+
+  ; PolarIdVar: map a `PolarId` to a recursive type variable.
+  ; Used during user-type reconstruction.
+  (PolarIdVars := (PolarIdVar ...))
+  (PolarIdVar := (PolarId Id))
 
   (Env := (IdTys BoundedIds))
 
