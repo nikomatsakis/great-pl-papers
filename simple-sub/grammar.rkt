@@ -8,13 +8,11 @@
         number
         (Lambda Id -> Expr)
         (Expr Expr)
-        (struct FieldExprs)
-        (Expr -> Field)
+        (Tuple Exprs)
+        (Get Expr number)
         (Let Id = Expr in Expr)
         )
 
-  (FieldExprs := (FieldExpr ...))
-  (FieldExpr := (FieldId Expr))
 
   (Env := (IdTys BoundedIds))
 
@@ -33,11 +31,15 @@
       Id
       Int
       (Ty -> Ty)
-      (struct FieldTys)
+      (Tuple Tys)
       )
 
-  (FieldTys := (FieldTy ...))
-  (FieldTy := (FieldId Ty))
-
   ((Id FieldId) := variable-not-otherwise-mentioned)
+  )
+
+(define-metafunction simple-sub
+  invert-polarity : Polarity -> Polarity
+
+  [(invert-polarity +) -]
+  [(invert-polarity -) +]
   )

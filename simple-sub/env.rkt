@@ -5,6 +5,19 @@
 (define-term EmptyEnv (() ()))
 
 (define-metafunction simple-sub
+  ;; introduce (and return) a sequence of fresh type variables with no bounds
+  env-with-fresh-vars : Env number -> (Ids Env)
+
+  [(env-with-fresh-vars Env 0) (() Env)]
+
+  [(env-with-fresh-vars Env number_n)
+   ((Id_n-1 ... Id_n) Env_n)
+   (where/error number_n-1 ,(- (term number_n) 1))
+   (where/error ((Id_n-1 ...) Env_n-1) (env-with-fresh-vars Env number_n-1))
+   (where/error (Id_n Env_n) (env-with-fresh-var Env_n-1))]
+  )
+
+(define-metafunction simple-sub
   ;; introduce (and return) a fresh type variable with no bounds
   env-with-fresh-var : Env -> (Id Env)
 

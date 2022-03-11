@@ -15,9 +15,9 @@
    (has-type Env Id Env Ty)
    ]
 
-  [(has-types Env (Expr_f ...) Env_f (Ty_f ...))
+  [(has-types Env Exprs_f Env_f Tys_f)
    ---------------
-   (has-type Env (struct ((FieldId_f Expr_f) ...)) Env_f (struct ((FieldId_f Ty_f) ...)))
+   (has-type Env (Tuple Exprs_f) Env_f (Tuple Tys_f))
    ]
 
   [(has-type Env Expr_f Env_f Ty_f)
@@ -29,10 +29,10 @@
    ]
 
   [(has-type Env Expr_o Env_o Ty_o)
-   (where/error (Id_fresh Env_fresh) (env-with-fresh-var Env_o))
-   (where Env_out (constrain Env_fresh (Ty_o <= (struct ((FieldId Id_fresh))))))
+   (where/error ((Id_fresh0 ... Id_fresh) Env_fresh) (env-with-fresh-vars Env_o number))
+   (where Env_out (constrain Env_fresh (Ty_o <= (Tuple (Id_fresh0 ... Id_fresh)))))
    ---------------
-   (has-type Env (Expr_o -> FieldId) Env_out Id_fresh)
+   (has-type Env (Get Expr_o number) Env_out Id_fresh)
    ]
 
   [(where/error (Id_fresh Env_fresh) (env-with-fresh-var Env))
@@ -78,8 +78,8 @@
    (where Error (constrain Env (Ty_arg1 <= Ty_arg0)))
    ]
 
-  [(constrain Env ((struct FieldTys_0) <= (struct FieldTys_1)))
-   (constrain-fields Env (FieldTys_0 <= FieldTys_1))
+  [(constrain Env ((Tuple Tys_0) <= (Tuple Tys_1)))
+   (constrain-zip Env (Tys_0 <= Tys_1))
    ]
 
   [(constrain Env (Id <= Ty))
@@ -107,23 +107,28 @@
   )
 
 (define-metafunction simple-sub
-  constrain-fields : Env_in (FieldTys_0 <= FieldTys_1) -> Env_out or Error
+  ;; Constrain the `i`th type in `Tys_0` with the `i`th type
+  ;; in `Tys_1`. `Tys_1` may be longer than `Tys_0`, in which case
+  ;; any extra types are ignored.
+  constrain-zip : Env_in (Tys_0 <= Tys_1) -> Env_out or Error
 
-  [(constrain-fields Env (() <= _))
+  [(constrain-zip Env (() <= _))
    Env]
 
-  [(constrain-fields Env (((Field Ty_0) FieldTy_rest ...) <= FieldTys_1))
-   (constrain-fields Env_f (FieldTy_rest ...) FieldTys_1)
-   (where (_ ... (Field Ty_1) _ ...) FieldTys_1)
-   (where Env_out (constrain Env Ty_0 Ty_1 Env_f))
+  [(constrain-zip Env ((Ty_0a Ty_0b ...) <= (Ty_1a Ty_1b ...)))
+   (constrain-zip Env_a ((Ty_0b ...) <= (Ty_1b ...)))
+   (where Env_a (constrain Env (Ty_0a <= Ty_1a)))
    ]
 
-  [(constrain-fields Env (((Field Ty_0) FieldTy_rest ...) <= FieldTys_1))
+  [(constrain-zip Env (_ <= _))
    Error]
 
   )
 
 (define-metafunction simple-sub
+  ;; Constrain each type in `Tys_0` to be <= each type in
+  ;; `Tys_1`. Right now only works if either `Tys_0` or `Tys_1`
+  ;; is of length 1, but that's because I am lazy.
   constrain-all : Env_in (Tys_0 <= Tys_1) -> Env or Error
 
   [(constrain-all Env (() <= _)) Env]
