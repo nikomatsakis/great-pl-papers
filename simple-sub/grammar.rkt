@@ -38,7 +38,7 @@
   (PolarIdVars := (PolarIdVar ...))
   (PolarIdVar := (PolarId Id))
 
-  (Env := (IdTys BoundedIds))
+  (Env := BoundedIds)
 
   (IdTys := (IdTy ...))
   (IdTy := (Id Ty))

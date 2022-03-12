@@ -3,11 +3,12 @@
 (provide (all-defined-out))
 
 (define-metafunction simple-sub
-  type-of-expr : Env Expr -> (Env Ty)
+  type-of-expr : IdTys Env Expr -> (Env Ty)
 
-  [(type-of-expr Env Expr)
+  [(type-of-expr IdTys Env Expr)
    (Env_out Ty_out)
    (where ((Env_out Ty_out)) ,(judgment-holds (has-type
+                                               IdTys
                                                Env
                                                Expr
                                                Env_out
@@ -17,61 +18,58 @@
   )
 
 (define-judgment-form simple-sub
-  #:mode (has-type I I O O)
-  #:contract (has-type Env Expr Env Ty)
+  #:mode (has-type I I I O O)
+  #:contract (has-type IdTys Env Expr Env Ty)
 
   [---------------
-   (has-type Env number Env Int)
+   (has-type IdTys Env number Env Int)
    ]
 
-  [(where ((_ ... (Id Ty) _ ...) _ ) Env)
+  [(where (_ ... (Id Ty) _ ...) IdTys)
    ---------------
-   (has-type Env Id Env Ty)
+   (has-type IdTys Env Id Env Ty)
    ]
 
-  [(has-types Env Exprs_f Env_f Tys_f)
+  [(has-types IdTys Env Exprs_f Env_f Tys_f)
    ---------------
-   (has-type Env (Tuple Exprs_f) Env_f (Tuple Tys_f))
+   (has-type IdTys Env (Tuple Exprs_f) Env_f (Tuple Tys_f))
    ]
 
-  [(has-type Env Expr_f Env_f Ty_f)
-   (has-type Env_f Expr_a Env_a Ty_a)
+  [(has-type IdTys Env Expr_f Env_f Ty_f)
+   (has-type IdTys Env_f Expr_a Env_a Ty_a)
    (where/error (Id_fresh Env_fresh) (env-with-fresh-var Env_a))
    (where Env_out (constrain Env_fresh (Ty_f <= (Ty_a -> Id_fresh))))
    ---------------
-   (has-type Env (Expr_f Expr_a) Env_out Id_fresh)
+   (has-type IdTys Env (Expr_f Expr_a) Env_out Id_fresh)
    ]
 
-  [(has-type Env Expr_o Env_o Ty_o)
+  [(has-type IdTys Env Expr_o Env_o Ty_o)
    (where/error ((Id_fresh0 ... Id_fresh) Env_fresh) (env-with-fresh-vars Env_o number))
    (where Env_out (constrain Env_fresh (Ty_o <= (Tuple (Id_fresh0 ... Id_fresh)))))
    ---------------
-   (has-type Env (Get Expr_o number) Env_out Id_fresh)
+   (has-type IdTys Env (Get Expr_o number) Env_out Id_fresh)
    ]
 
   [(where/error (Id_fresh Env_fresh) (env-with-fresh-var Env))
-   (where/error Env_arg (env-with-let-var Env_fresh Id_arg Id_fresh))
-   (has-type Env_arg Expr_body Env_body Ty_body)
-   (where/error (_ BoundedIds_out) Env_body)
-   (where/error (IdTys_out _) Env)
-   (where/error Ty_out (Id_fresh -> Ty_body))
+   (has-type ((Id_arg Id_fresh) IdTy ...) Env_fresh Expr_body Env_body Ty_body)
+   (where/error Ty_λ (Id_fresh -> Ty_body))
    ---------------
-   (has-type Env (Lambda Id_arg -> Expr_body) (IdTys_out BoundedIds_out) Ty_out)
+   (has-type (IdTy ...) Env (Lambda Id_arg -> Expr_body) Env_body Ty_λ)
    ]
   )
 
 (define-judgment-form simple-sub
-  #:mode (has-types I I O O)
-  #:contract (has-types Env Exprs Env Tys)
+  #:mode (has-types I I I O O)
+  #:contract (has-types IdTys Env Exprs Env Tys)
 
   [---------------
-   (has-types Env () Env ())
+   (has-types IdTys Env () Env ())
    ]
 
-  [(has-type Env Expr_0 Env_0 Ty_0)
-   (has-types Env (Expr_1 ...) Env (Ty_1 ...))
+  [(has-type IdTys Env Expr_0 Env_0 Ty_0)
+   (has-types IdTys Env (Expr_1 ...) Env (Ty_1 ...))
    ---------------
-   (has-types Env (Expr_0 Expr_1 ...) Env (Ty_0 Ty_1 ...))
+   (has-types IdTys Env (Expr_0 Expr_1 ...) Env (Ty_0 Ty_1 ...))
    ]
   )
 
@@ -170,6 +168,7 @@
    [(Env (term EmptyEnv))]
    (test-equal
     (judgment-holds (has-type
+                     ()
                      Env
                      22
                      Env_out
