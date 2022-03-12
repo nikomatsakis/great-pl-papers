@@ -16,19 +16,6 @@
   )
 
 (define-metafunction simple-sub
-  ;; introduce (and return) a sequence of fresh type variables with no bounds
-  env-with-fresh-vars : Env number -> (Ids Env)
-
-  [(env-with-fresh-vars Env 0) (() Env)]
-
-  [(env-with-fresh-vars Env number_n)
-   ((Id_n-1 ... Id_n) Env_n)
-   (where/error number_n-1 ,(- (term number_n) 1))
-   (where/error ((Id_n-1 ...) Env_n-1) (env-with-fresh-vars Env number_n-1))
-   (where/error (Id_n Env_n) (env-with-fresh-var Env_n-1))]
-  )
-
-(define-metafunction simple-sub
   ;; introduce (and return) a fresh type variable with no bounds
   env-with-fresh-var : Env -> (Id Env)
 
@@ -36,6 +23,17 @@
    (Id_fresh (Level ((Id_fresh Level () ()) TyVarDef ...)))
    (where/error Id_fresh (fresh-var Env))
    (where/error (Level (TyVarDef ...)) Env)
+   ]
+  )
+
+(define-metafunction simple-sub
+  ;; introduce (and return) a fresh type variable with no bounds
+  env-with-fresh-var-in-level : Env Level -> (Id Env)
+
+  [(env-with-fresh-var-in-level Env Level_var)
+   (Id_fresh (Level_env ((Id_fresh Level_var () ()) TyVarDef ...)))
+   (where/error Id_fresh (fresh-var Env))
+   (where/error (Level_env (TyVarDef ...)) Env)
    ]
   )
 
@@ -84,13 +82,43 @@
   )
 
 (define-metafunction simple-sub
+  ;; Relate Id and Ty in a way that is "appropriate" for the given polarity.
+  appropriate-bound : Polarity Id Ty -> Bound
+
+  [; Polarity + context: We are producing an `Id` from a `Ty`, so `Id`
+   ; must be a supertype of `Ty`.
+   (appropriate-bound + Id Ty) (Id >= Ty)]
+
+  [; Polarity - context: We are storing an `Id` into a `Ty`, so `Id`
+   ; must be a subtype of `Ty`.
+   (appropriate-bound - Id Ty) (Id <= Ty)]
+  )
+
+(define-metafunction simple-sub
+  ;; For polarity +, returns the lower bounds of `Id` (i.e., Id is a supertype of those things).
+  ;;
+  ;; For polarity -, returns the upper bounds of `Id` (i.e., Id is a subtype of those things).
+  ;;
+  ;; Why are these the "appropriate" bounds? They are the ones useful for representing `Id`
+  ;; in a context of the given polarity.
+  ;;
+  ;; Example: Polarity `+` is the "return value" from a function, i.e., a generated value.
+  ;; In this case, you represent `Id` as the *union of its lower bounds*, since those are the
+  ;; values it could have come from.
+  ;;
+  ;; Polarity `-` is the input to a function. In that case, you represent it as the *intersection*
+  ;; of its *upper bounds*, i.e., the callee must meet all of those bounds.
   appropriate-bounds-of-var-in-env : Env Id Polarity -> Tys
 
   [(appropriate-bounds-of-var-in-env Env Id +) (lower-bounds-of-var-in-env Env Id)]
   [(appropriate-bounds-of-var-in-env Env Id -) (upper-bounds-of-var-in-env Env Id)]
   )
 
+
 (define-metafunction simple-sub
+  ;; Add the given bound to the given variable.
+  ;;
+  ;; `()` if such a bound already exists.
   env-with-fresh-bound : Env Bound -> Env or ()
 
   [(env-with-fresh-bound Env (Id <= Ty))

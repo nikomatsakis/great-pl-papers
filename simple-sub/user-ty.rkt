@@ -92,6 +92,12 @@
   )
 
 (define-metafunction simple-sub
+  ;; Returns an appropriate type to combine T0 and T1 based on the polarity:
+  ;;
+  ;; `+`, or function output, these are two possibilities, so use union.
+  ;;
+  ;; `-`, or function input, these are two constraints it must meet, so use intersection
+  ;; (the value must be both Ty0 and Ty1 at same time).
   -set-op-tys : Polarity UserTy UserTy -> UserTy
 
   [(-set-op-tys + UserTy_0 UserTy_1)
