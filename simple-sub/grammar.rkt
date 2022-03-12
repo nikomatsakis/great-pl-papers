@@ -38,13 +38,13 @@
   (PolarIdVars := (PolarIdVar ...))
   (PolarIdVar := (PolarId Id))
 
-  (Env := BoundedIds)
+  (Env := (Level TyVarDefs))
 
   (IdTys := (IdTy ...))
   (IdTy := (Id Ty))
 
-  (BoundedIds := (BoundedId ...))
-  (BoundedId := (Id Tys Tys))
+  (TyVarDefs := (TyVarDef ...))
+  (TyVarDef := (Id Level Tys Tys))
 
   (Bound :=
          (Id <= Ty)
@@ -57,6 +57,8 @@
       (Ty -> Ty)
       (Tuple Tys)
       )
+
+  (Level := (L number))
 
   ((Id FieldId) := variable-not-otherwise-mentioned)
   )

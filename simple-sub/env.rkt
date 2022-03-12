@@ -2,7 +2,7 @@
 (require redex/reduction-semantics racket/set "grammar.rkt")
 (provide (all-defined-out))
 
-(define-term EmptyEnv ())
+(define-term EmptyEnv ((L 0) ()))
 
 (define-metafunction simple-sub
   ;; introduce (and return) a sequence of fresh type variables with no bounds
@@ -22,9 +22,9 @@
   env-with-fresh-var : Env -> (Id Env)
 
   [(env-with-fresh-var Env)
-   (Id_fresh ((Id_fresh () ()) BoundedId ...))
+   (Id_fresh (Level ((Id_fresh Level () ()) TyVarDef ...)))
    (where/error Id_fresh (fresh-var Env))
-   (where/error (BoundedId ...) Env)
+   (where/error (Level (TyVarDef ...)) Env)
    ]
   )
 
@@ -37,11 +37,11 @@
   )
 
 (define-metafunction simple-sub
-  env-bounds : Env Id -> (Tys_lower Tys_upper)
+  ty-var-def : Env Id -> TyVarDef
 
-  [(env-bounds Env Id)
-   (Tys_lower Tys_upper)
-   (where/error (_ ... (Id Tys_lower Tys_upper) _ ...) Env)
+  [(ty-var-def Env Id)
+   (Id Level Tys_lower Tys_upper)
+   (where/error (_ (_ ... (Id Level Tys_lower Tys_upper) _ ...)) Env)
    ]
   )
 
@@ -50,7 +50,7 @@
 
   [(env-upper-bounds Env Id)
    Tys_upper
-   (where/error (Tys_lower Tys_upper) (env-bounds Env Id))
+   (where/error (Id _ _ Tys_upper) (ty-var-def Env Id))
    ]
   )
 
@@ -59,7 +59,7 @@
 
   [(env-lower-bounds Env Id)
    Tys_lower
-   (where/error (Tys_lower Tys_upper) (env-bounds Env Id))
+   (where/error (Id _ Tys_lower _) (ty-var-def Env Id))
    ]
   )
 
@@ -74,18 +74,18 @@
   env-with-fresh-bound : Env Bound -> Env or ()
 
   [(env-with-fresh-bound Env (Id <= Ty))
-   (BoundedId_0 ... (Id Tys_lower Tys_upper1) BoundedId_1 ...)
+   (Level_env (TyVarDef_0 ... (Id Level_id Tys_lower Tys_upper1) TyVarDef_1 ...))
 
-   (where/error (BoundedId_0 ... (Id Tys_lower Tys_upper0) BoundedId_1 ...) Env)
+   (where/error (Level_env (TyVarDef_0 ... (Id Level_id Tys_lower Tys_upper0) TyVarDef_1 ...)) Env)
    (side-condition (term (pretty-print (term ("env-with-fresh-bound" (Id <= Ty) Tys_upper0)))))
    (where/error Tys_upper1 ,(set-add (term Tys_upper0) (term Ty)))
    (where #f (equal-terms Tys_upper0 Tys_upper1))
    ]
 
   [(env-with-fresh-bound Env (Id >= Ty))
-   (BoundedId_0 ... (Id Tys_lower1 Tys_upper) BoundedId_1 ...)
+   (Level_env (TyVarDef_0 ... (Id Level_id Tys_lower1 Tys_upper) TyVarDef_1 ...))
 
-   (where/error (BoundedId_0 ... (Id Tys_lower0 Tys_upper) BoundedId_1 ...) Env)
+   (where/error (Level_env (TyVarDef_0 ... (Id Level_id Tys_lower0 Tys_upper) TyVarDef_1 ...)) Env)
    (side-condition (term (pretty-print (term ("env-with-fresh-bound" (Ty <= Id) Tys_lower0)))))
    (where/error Tys_lower1 ,(set-add (term Tys_lower0) (term Ty)))
    (where #f (equal-terms Tys_lower0 Tys_lower1))
