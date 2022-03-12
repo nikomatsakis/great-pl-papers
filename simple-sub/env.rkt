@@ -5,6 +5,17 @@
 (define-term EmptyEnv ((L 0) ()))
 
 (define-metafunction simple-sub
+  ;; return an environment with an incremented level counter
+  env-in-next-level : Env -> Env
+
+  [(env-in-next-level Env)
+   ((L number_next) TyVarDefs)
+   (where/error ((L number) TyVarDefs) Env)
+   (where/error number_next ,(+ 1 (term number)))]
+
+  )
+
+(define-metafunction simple-sub
   ;; introduce (and return) a sequence of fresh type variables with no bounds
   env-with-fresh-vars : Env number -> (Ids Env)
 

@@ -1,6 +1,6 @@
 #lang racket
 (require redex/reduction-semantics "grammar.rkt" "env.rkt")
-(provide (all-defined-out))
+(provide level-of-ty)
 
 (define-metafunction simple-sub
   level-of-ty : Env Ty -> Level

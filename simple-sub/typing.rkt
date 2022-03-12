@@ -54,7 +54,7 @@
    (has-type ((Id_arg Id_fresh) IdTy ...) Env_fresh Expr_body Env_body Ty_body)
    (where/error Ty_λ (Id_fresh -> Ty_body))
    ---------------
-   (has-type (IdTy ...) Env (Lambda Id_arg -> Expr_body) Env_body Ty_λ)
+   (has-type (IdTy ...) Env (λ Id_arg -> Expr_body) Env_body Ty_λ)
    ]
   )
 

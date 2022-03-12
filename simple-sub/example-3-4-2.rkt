@@ -5,7 +5,7 @@
   (redex-let*
    simple-sub
    [(Env (term EmptyEnv))
-    (Expr_test (term (Lambda f -> (Lambda x -> (f (f x))))))
+    (Expr_test (term (λ f -> (λ x -> (f (f x))))))
     ((Env_test Ty_test) (term (type-of-expr () Env Expr_test)))]
    (test-equal (term Env_test)
                (term ((L 0)
