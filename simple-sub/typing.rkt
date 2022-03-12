@@ -96,22 +96,22 @@
 
   [(constrain Env (Id <= Ty))
    Env
-   (where (_ ... Ty _ ...)  (env-upper-bounds Env Id))]
+   (where (_ ... Ty _ ...)  (upper-bounds-of-var-in-env Env Id))]
 
   [(constrain Env (Id <= Ty))
    (constrain-all Env_a (Tys_lb <= (Ty)))
    (where/error Env_a (env-with-fresh-bound Env (Id <= Ty)))
-   (where/error Tys_lb (env-lower-bounds Env_a Id))
+   (where/error Tys_lb (lower-bounds-of-var-in-env Env_a Id))
    ]
 
   [(constrain Env (Ty <= Id))
    Env
-   (where (_ ... Ty _ ...)  (env-lower-bounds Env Id))]
+   (where (_ ... Ty _ ...)  (lower-bounds-of-var-in-env Env Id))]
 
   [(constrain Env (Ty <= Id))
    (constrain-all Env_a ((Ty) <= Tys_ub))
    (where/error Env_a (env-with-fresh-bound Env (Id >= Ty)))
-   (where/error Tys_ub (env-upper-bounds Env_a Id))]
+   (where/error Tys_ub (upper-bounds-of-var-in-env Env_a Id))]
 
   [(constrain Env (_ <= _))
    Error]
@@ -184,11 +184,11 @@
     (Env_2 (term (constrain Env_1 (Id_0 <= Id_1))))
     ]
    (test-equal
-    (term (env-lower-bounds Env_2 Id_1))
+    (term (lower-bounds-of-var-in-env Env_2 Id_1))
     (term ()))
 
    (test-equal
-    (term (env-upper-bounds Env_2 Id_0))
+    (term (upper-bounds-of-var-in-env Env_2 Id_0))
     (term (Id_1)))
    )
 
@@ -203,23 +203,23 @@
     (Env_6 (term (constrain Env_5 (Id_3 <= Id_0))))
     ]
    (test-equal
-    (term (env-lower-bounds Env_6 Id_3))
+    (term (lower-bounds-of-var-in-env Env_6 Id_3))
     (term ()))
 
    (test-equal
-    (term (env-upper-bounds Env_6 Id_3))
+    (term (upper-bounds-of-var-in-env Env_6 Id_3))
     (term (Id_0)))
 
    (test-equal
-    (term (env-upper-bounds Env_6 Id_0))
+    (term (upper-bounds-of-var-in-env Env_6 Id_0))
     (term (Id_2 Id_1)))
 
    (test-equal
-    (term (env-lower-bounds Env_6 Id_0))
+    (term (lower-bounds-of-var-in-env Env_6 Id_0))
     (term ()))
 
    (test-equal
-    (term (env-lower-bounds Env_6 Id_2))
+    (term (lower-bounds-of-var-in-env Env_6 Id_2))
     (term ()))
 
    (redex-let*
@@ -228,16 +228,16 @@
      ]
 
     (test-equal
-     (term (env-lower-bounds Env_7 Id_0))
+     (term (lower-bounds-of-var-in-env Env_7 Id_0))
      (term (Int)))
     (test-equal
-     (term (env-lower-bounds Env_7 Id_1))
+     (term (lower-bounds-of-var-in-env Env_7 Id_1))
      (term (Int)))
     (test-equal
-     (term (env-lower-bounds Env_7 Id_2))
+     (term (lower-bounds-of-var-in-env Env_7 Id_2))
      (term (Int)))
     (test-equal
-     (term (env-lower-bounds Env_7 Id_3))
+     (term (lower-bounds-of-var-in-env Env_7 Id_3))
      (term ()))
     )
    )

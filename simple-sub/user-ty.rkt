@@ -46,7 +46,7 @@
    ; If so, generate a fresh variable.
    (-go Env Id Polarity (PolarId ...) PolarIdVars)
    (Id PolarIdVars)
-   (where () (env-polar-bounds Env Id Polarity))
+   (where () (appropriate-bounds-of-var-in-env Env Id Polarity))
    (where/error Id_fresh (fresh-var (Env PolarIdVars)))
    ]
 
@@ -56,7 +56,7 @@
    ; but we don't, which is just because I am lazy (also because the paper doesn't).
    (-go Env Id Polarity (PolarId ...) PolarIdVars)
    (UserTy_r PolarIdVars_b)
-   (where/error Tys_b (env-polar-bounds Env Id Polarity))
+   (where/error Tys_b (appropriate-bounds-of-var-in-env Env Id Polarity))
    (where/error PolarIds_1 ((Polarity Id) PolarId ...))
    (where/error (UserTys_b PolarIdVars_b) (-go-fold Env Tys_b Polarity PolarIds_1 PolarIdVars))
    (where/error UserTy_m (-merge Polarity UserTys_b))

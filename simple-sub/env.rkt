@@ -37,37 +37,46 @@
   )
 
 (define-metafunction simple-sub
-  ty-var-def : Env Id -> TyVarDef
+  var-def-in-env : Env Id -> TyVarDef
 
-  [(ty-var-def Env Id)
+  [(var-def-in-env Env Id)
    (Id Level Tys_lower Tys_upper)
    (where/error (_ (_ ... (Id Level Tys_lower Tys_upper) _ ...)) Env)
    ]
   )
 
 (define-metafunction simple-sub
-  env-upper-bounds : Env Id -> Tys
+  level-of-var-in-env : Env Id -> Level
 
-  [(env-upper-bounds Env Id)
+  [(level-of-var-in-env Env Id)
+   Level
+   (where/error (Id Level _ _) (var-def-in-env Env Id))
+   ]
+  )
+
+(define-metafunction simple-sub
+  upper-bounds-of-var-in-env : Env Id -> Tys
+
+  [(upper-bounds-of-var-in-env Env Id)
    Tys_upper
-   (where/error (Id _ _ Tys_upper) (ty-var-def Env Id))
+   (where/error (Id _ _ Tys_upper) (var-def-in-env Env Id))
    ]
   )
 
 (define-metafunction simple-sub
-  env-lower-bounds : Env Id -> Tys
+  lower-bounds-of-var-in-env : Env Id -> Tys
 
-  [(env-lower-bounds Env Id)
+  [(lower-bounds-of-var-in-env Env Id)
    Tys_lower
-   (where/error (Id _ Tys_lower _) (ty-var-def Env Id))
+   (where/error (Id _ Tys_lower _) (var-def-in-env Env Id))
    ]
   )
 
 (define-metafunction simple-sub
-  env-polar-bounds : Env Id Polarity -> Tys
+  appropriate-bounds-of-var-in-env : Env Id Polarity -> Tys
 
-  [(env-polar-bounds Env Id +) (env-lower-bounds Env Id)]
-  [(env-polar-bounds Env Id -) (env-upper-bounds Env Id)]
+  [(appropriate-bounds-of-var-in-env Env Id +) (lower-bounds-of-var-in-env Env Id)]
+  [(appropriate-bounds-of-var-in-env Env Id -) (upper-bounds-of-var-in-env Env Id)]
   )
 
 (define-metafunction simple-sub
@@ -110,10 +119,10 @@
     ((Id_0 Env_0) (term (env-with-fresh-var Env_e)))
     ((Id_1 Env_1) (term (env-with-fresh-var Env_0)))]
 
-   (test-equal (term (env-upper-bounds Env_1 Id_0))
+   (test-equal (term (upper-bounds-of-var-in-env Env_1 Id_0))
                (term ()))
 
-   (test-equal (term (env-lower-bounds Env_1 Id_1))
+   (test-equal (term (lower-bounds-of-var-in-env Env_1 Id_1))
                (term ()))
    )
 
@@ -124,10 +133,10 @@
     (Env_1 (term (env-with-fresh-bound Env_0 (Id_0 <= int))))
     (() (term (env-with-fresh-bound Env_1 (Id_0 <= int))))]
 
-   (test-equal (term (env-upper-bounds Env_1 Id_0))
+   (test-equal (term (upper-bounds-of-var-in-env Env_1 Id_0))
                (term (int)))
 
-   (test-equal (term (env-lower-bounds Env_1 Id_0))
+   (test-equal (term (lower-bounds-of-var-in-env Env_1 Id_0))
                (term ()))
    )
 
