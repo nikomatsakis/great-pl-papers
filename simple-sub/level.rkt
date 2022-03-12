@@ -11,9 +11,8 @@
   [(level-of-ty Env (Ty_arg -> Ty_ret))
    (min-level (level-of-ty Env Ty_arg) (level-of-ty Env Ty_ret))]
 
-  [(level-of-ty Env (Tuple (Ty ...)))
-   (min-level Level_ty ...)
-   (where (Level_ty ...) ((level-of-ty Env Ty) ...))]
+  [(level-of-ty Env (Cons Ty_car Ty_cdr))
+   (min-level (level-of-ty Env Ty_car) (level-of-ty Env Ty_cdr))]
 
   [(level-of-ty Env Id)
    (level-of-var-in-env Env Id)]
@@ -35,7 +34,7 @@
   (redex-let*
    simple-sub
    [((Id_x Env) (term (env-with-fresh-var EmptyEnv)))]
-   (test-equal (term (level-of-ty Env (Tuple (Int Id_x (Id_x -> Int)))))
+   (test-equal (term (level-of-ty Env (Cons Int (Cons Id_x (Id_x -> Int)))))
                (term (L 0))))
 
   )

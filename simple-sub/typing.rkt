@@ -30,9 +30,10 @@
    (has-type IdTys Env Id Env Ty)
    ]
 
-  [(has-types IdTys Env Exprs_f Env_f Tys_f)
+  [(has-type IdTys Env Expr_car Env_car Ty_car)
+   (has-type IdTys Env Expr_cdr Env_cdr Ty_cdr)
    ---------------
-   (has-type IdTys Env (Tuple Exprs_f) Env_f (Tuple Tys_f))
+   (has-type IdTys Env (Cons Expr_car Expr_cdr) Env_cdr (Cons Ty_car Ty_cdr))
    ]
 
   [(has-type IdTys Env Expr_f Env_f Ty_f)
@@ -44,10 +45,19 @@
    ]
 
   [(has-type IdTys Env Expr_o Env_o Ty_o)
-   (where/error ((Id_fresh0 ... Id_fresh) Env_fresh) (env-with-fresh-vars Env_o number))
-   (where Env_out (constrain Env_fresh (Ty_o <= (Tuple (Id_fresh0 ... Id_fresh)))))
+   (where/error (Id_car Env_car) (env-with-fresh-var Env_o))
+   (where/error (Id_cdr Env_cdr) (env-with-fresh-var Env_car))
+   (where Env_out (constrain Env_cdr (Ty_o <= (Cons Id_car Id_cdr))))
    ---------------
-   (has-type IdTys Env (Get Expr_o number) Env_out Id_fresh)
+   (has-type IdTys Env (Car Expr_o) Env_out Id_car)
+   ]
+
+  [(has-type IdTys Env Expr_o Env_o Ty_o)
+   (where/error (Id_car Env_car) (env-with-fresh-var Env_o))
+   (where/error (Id_cdr Env_cdr) (env-with-fresh-var Env_car))
+   (where Env_out (constrain Env_cdr (Ty_o <= (Cons Id_car Id_cdr))))
+   ---------------
+   (has-type IdTys Env (Cdr Expr_o) Env_out Id_cdr)
    ]
 
   [(where/error (Id_fresh Env_fresh) (env-with-fresh-var Env))
@@ -55,21 +65,6 @@
    (where/error Ty_λ (Id_fresh -> Ty_body))
    ---------------
    (has-type (IdTy ...) Env (λ Id_arg -> Expr_body) Env_body Ty_λ)
-   ]
-  )
-
-(define-judgment-form simple-sub
-  #:mode (has-types I I I O O)
-  #:contract (has-types IdTys Env Exprs Env Tys)
-
-  [---------------
-   (has-types IdTys Env () Env ())
-   ]
-
-  [(has-type IdTys Env Expr_0 Env_0 Ty_0)
-   (has-types IdTys Env (Expr_1 ...) Env (Ty_1 ...))
-   ---------------
-   (has-types IdTys Env (Expr_0 Expr_1 ...) Env (Ty_0 Ty_1 ...))
    ]
   )
 
@@ -82,7 +77,7 @@
 
   [(constrain Env ((Ty_arg0 -> Ty_ret0) <= (Ty_arg1 -> Ty_ret1)))
    (constrain Env_arg (Ty_ret0 <= Ty_ret1) Env_ret)
-   (where Env_arg (constrain Env (Ty_arg1 <= Ty_arg0) Env_arg))
+   (where Env_arg (constrain Env (Ty_arg1 <= Ty_arg0)))
    ]
 
   [(constrain Env ((Ty_arg0 -> Ty_ret0) <= (Ty_arg1 -> Ty_ret1)))
@@ -90,8 +85,14 @@
    (where Error (constrain Env (Ty_arg1 <= Ty_arg0)))
    ]
 
-  [(constrain Env ((Tuple Tys_0) <= (Tuple Tys_1)))
-   (constrain-zip Env (Tys_0 <= Tys_1))
+  [(constrain Env ((Cons Ty_car0 Ty_cdr0) <= (Cons Ty_car1 Ty_cdr1)))
+   (constrain Env_car (Ty_cdr0 <= Ty_cdr1))
+   (where Env_car (constrain Env (Ty_car0 <= Ty_car0)))
+   ]
+
+  [(constrain Env ((Cons Ty_car0 Ty_cdr0) <= (Cons Ty_car1 Ty_cdr1)))
+   Error
+   (where Error (constrain Env (Ty_car0 <= Ty_car0)))
    ]
 
   [(constrain Env (Id <= Ty))

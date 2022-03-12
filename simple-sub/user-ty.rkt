@@ -20,9 +20,10 @@
    (where/error (UserTy_arg PolarIdVars_arg) (-go Env Ty_arg (invert-polarity Polarity) PolarIds PolarIdVars))
    (where/error (UserTy_ret PolarIdVars_ret) (-go Env Ty_ret Polarity PolarIds PolarIdVars_arg))]
 
-  [(-go Env (Tuple (Ty_f ...)) Polarity PolarIds PolarIdVars)
-   ((Tuple UserTys_f) PolarIdVars_f)
-   (where/error (UserTys_f PolarIdVars_f) (-go-fold (Ty_f ...) Polarity PolarIds PolarIdVars))]
+  [(-go Env (Cons Ty_car Ty_cdr) Polarity PolarIds PolarIdVars)
+   ((Cons UserTy_car UserTy_cdr) PolarIdVars_cdr)
+   (where/error (UserTy_car PolarIdVars_car) (-go Env Ty_car Polarity PolarIds PolarIdVars))
+   (where/error (UserTy_cdr PolarIdVars_cdr) (-go Env Ty_car Polarity PolarIds PolarIdVars_car))]
 
   [; type variable, recursive case: check polar-id-vars to see if it is present already.
    ; if so, return that variable.

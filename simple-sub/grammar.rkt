@@ -10,8 +10,9 @@
         number                   ; constant
         (λ Id -> Expr)           ; define a lambda
         (Expr_f Expr_a)          ; apply a function `f` to its argument `a`
-        (Tuple Exprs)            ; create a tuple
-        (Get Expr number)        ; get the `n`th  element from a tuple
+        (Cons Expr Expr)         ; create a tuple
+        (Car Expr)               ; get the first element from a tuple
+        (Cdr Expr)               ; get the second element from a tuple
         (Let Id = Expr in Expr)  ; create a binding; performs let generalization
         )
 
@@ -26,7 +27,7 @@
           (⨆ UserTy UserTy)
           (⊓ UserTy UserTy)
           (UserTy -> UserTy)
-          (Tuple UserTys)
+          (Cons UserTy UserTy)
           (μ Id Type)
           Id
           Int
@@ -75,7 +76,7 @@
       Id
       Int
       (Ty -> Ty)
-      (Tuple Tys)
+      (Cons Ty Ty)
       )
 
   ; Level: tracks how many `let` binders we are within, used for
