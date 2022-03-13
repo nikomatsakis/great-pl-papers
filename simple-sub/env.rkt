@@ -6,12 +6,12 @@
 
 (define-metafunction simple-sub
   ;; return an environment with an incremented level counter
-  env-in-next-level : Env -> Env
+  env-with-adjusted-level : Env number -> Env
 
-  [(env-in-next-level Env)
+  [(env-with-adjusted-level Env number_offset)
    ((L number_next) TyVarDefs)
    (where/error ((L number) TyVarDefs) Env)
-   (where/error number_next ,(+ 1 (term number)))]
+   (where/error number_next ,(+ (term number_offset) (term number)))]
 
   )
 

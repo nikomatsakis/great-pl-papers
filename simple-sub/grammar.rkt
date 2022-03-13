@@ -61,7 +61,7 @@
   ; TyVarDef: maps a variable to its definition
   ; (level, current bounds) within the environment
   (TyVarDefs := (TyVarDef ...))
-  (TyVarDef := (Id Level Tys Tys))
+  (TyVarDef := (Id Level Tys_lower Tys_upper))
 
   ; Bound: a bound on a variable; i.e., relation to a type
   (Bound :=

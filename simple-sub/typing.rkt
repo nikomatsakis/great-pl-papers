@@ -1,5 +1,5 @@
 #lang racket
-(require redex/reduction-semantics "grammar.rkt" "env.rkt")
+(require redex/reduction-semantics "grammar.rkt" "env.rkt" "level.rkt")
 (provide (all-defined-out))
 
 (define-metafunction simple-sub
@@ -66,6 +66,15 @@
    ---------------
    (has-type (IdTy ...) Env (λ Id_arg -> Expr_body) Env_body Ty_λ)
    ]
+
+  [(where/error Env_let (env-with-adjusted-level Env +1))
+   (where/error (Id_fresh Env_fresh) (env-with-fresh-var Env_let))
+   (has-type ((Id Id_fresh) IdTy ...) Env_fresh Expr_body Env_body Ty_body)
+   (where/error Env_body-1 (env-with-adjusted-level Env_body -1))
+   (has-type ((Id Id_fresh) IdTy ...) Env_body-1 Expr_rest Env_rest Ty_rest)
+   ---------------
+   (has-type (IdTy ...) Env (Let Id = Expr_body in Expr_rest) Env_rest Ty_rest)
+   ]
   )
 
 (define-metafunction simple-sub
@@ -99,20 +108,51 @@
    Env
    (where (_ ... Ty _ ...)  (upper-bounds-of-var-in-env Env Id))]
 
+  [(constrain Env (Ty <= Id))
+   Env
+   (where (_ ... Ty _ ...)  (lower-bounds-of-var-in-env Env Id))]
+
   [(constrain Env (Id <= Ty))
    (constrain-all Env_a (Tys_lb <= (Ty)))
+   (where/error Level_id (level-of-var-in-env Env Id))
+   (where/error Level_ty (level-of-ty Env Ty))
+   (where #t (level-at-or-below Level_ty Level_id))
    (where/error Env_a (env-with-fresh-bound Env (Id <= Ty)))
    (where/error Tys_lb (lower-bounds-of-var-in-env Env_a Id))
    ]
 
   [(constrain Env (Ty <= Id))
-   Env
-   (where (_ ... Ty _ ...)  (lower-bounds-of-var-in-env Env Id))]
+   (constrain-all Env_a ((Ty) <= Tys_ub))
+   (where/error Level_id (level-of-var-in-env Env Id))
+   (where/error Level_ty (level-of-ty Env Ty))
+   (where #t (level-at-or-below Level_ty Level_id))
+   (where/error Env_a (env-with-fresh-bound Env (Id >= Ty)))
+   (where/error Tys_ub (upper-bounds-of-var-in-env Env_a Id))
+   ]
+
+  [(constrain Env (Id <= Ty))
+   (constrain Env_out (Id <= Ty_extruded))
+
+   ; In case of a level mismatch, extrude with polarity `-` --
+   ; that means that `Ty` is a "input", so we get "some subtype 
+   ; of Ty" back (but at a suitable level).
+   (where/error Level_id (level-of-var-in-env Env Id))
+   (where/error Level_ty (level-of-ty Env Ty))
+   (where #f (level-at-or-below Level_ty Level_id))
+   (where (Ty_extruded Env_out) (extrude Env Level_id - Ty))
+   ]
 
   [(constrain Env (Ty <= Id))
-   (constrain-all Env_a ((Ty) <= Tys_ub))
-   (where/error Env_a (env-with-fresh-bound Env (Id >= Ty)))
-   (where/error Tys_ub (upper-bounds-of-var-in-env Env_a Id))]
+   (constrain Env_out (Ty_extruded <= Id))
+
+   ; In case of a level mismatch, extrude with polarity `+` --
+   ; that means that `Ty` is an "output", so we get "some
+   ; supertype of Ty" back (but at a suitable level).
+   (where/error Level_id (level-of-var-in-env Env Id))
+   (where/error Level_ty (level-of-ty Env Ty))
+   (where #f (level-at-or-below Level_ty Level_id))
+   (where (Ty_extruded Env_out) (extrude Env Level_id + Ty))
+   ]
 
   [(constrain Env (_ <= _))
    Error]
