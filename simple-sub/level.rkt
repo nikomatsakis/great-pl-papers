@@ -232,7 +232,6 @@
                 (term (X2 (L 0) () ())))
     )
 
-   (current-traced-metafunctions '(extrude-ty))
    (; extrude (Id_x -> Id_x1) with polarity -
     redex-let*
     simple-sub
