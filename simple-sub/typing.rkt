@@ -30,6 +30,11 @@
    (has-type IdTys Env Id Env Ty)
    ]
 
+  [(where (_ ... (Id (ForAll Level Ty)) _ ...) IdTys)
+   ---------------
+   (has-type IdTys Env Id Env (instantiate-at-or-above Level Ty))
+   ]
+
   [(has-type IdTys Env Expr_car Env_car Ty_car)
    (has-type IdTys Env Expr_cdr Env_cdr Ty_cdr)
    ---------------
@@ -68,10 +73,11 @@
    ]
 
   [(where/error Env_let (env-with-adjusted-level Env +1))
+   (where/error Level_let (level-of-env Env_let))
    (where/error (Id_fresh Env_fresh) (env-with-fresh-var Env_let))
    (has-type ((Id Id_fresh) IdTy ...) Env_fresh Expr_body Env_body Ty_body)
    (where/error Env_body-1 (env-with-adjusted-level Env_body -1))
-   (has-type ((Id Id_fresh) IdTy ...) Env_body-1 Expr_rest Env_rest Ty_rest)
+   (has-type ((Id (ForAll Level_let Id_fresh)) IdTy ...) Env_body-1 Expr_rest Env_rest Ty_rest)
    ---------------
    (has-type (IdTy ...) Env (Let Id = Expr_body in Expr_rest) Env_rest Ty_rest)
    ]

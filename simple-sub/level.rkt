@@ -2,7 +2,7 @@
 (require redex/reduction-semantics "grammar.rkt" "env.rkt")
 (provide level-of-ty
          extrude
-         instantiate-above
+         instantiate-at-or-above
          level-at-or-below)
 
 (define-metafunction simple-sub
@@ -169,7 +169,7 @@
   )
 
 (define-metafunction simple-sub
-  instantiate-above : Env Level Ty -> (Env Ty)
+  instantiate-at-or-above : Env Level Ty -> (Env Ty)
 
   )
 

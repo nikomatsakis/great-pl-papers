@@ -52,7 +52,7 @@
   ; IdTy: an id -> ty mapping, used to store the types of bound variables
   ; in expressions
   (IdTys := (IdTy ...))
-  (IdTy := (Id Ty))
+  (IdTy := (Id TyScheme))
 
   ; IdPair: an id -> id mapping, used internally within extrude
   (IdPairs := (IdPair ...))
@@ -78,6 +78,13 @@
       (Ty -> Ty)
       (Cons Ty Ty)
       )
+
+  ; TyScheme: a type that may contain forall binders.
+  ; We represent binders as a level -- any type variable
+  ; referenced within the TypeScheme is universally bound
+  ; and should be instantiated (note that it may have subtyping
+  ; relationships still to other types).
+  (TyScheme := Ty (ForAll Level Ty))
 
   ; Level: tracks how many `let` binders we are within, used for
   ; let generalization.

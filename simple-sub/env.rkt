@@ -16,6 +16,16 @@
   )
 
 (define-metafunction simple-sub
+  ;; return the level of the current environment
+  level-of-env : Env -> Level
+
+  [(level-of-env Env)
+   Level
+   (where/error (Level _) Env)]
+
+  )
+
+(define-metafunction simple-sub
   ;; introduce (and return) a fresh type variable with no bounds
   env-with-fresh-var : Env -> (Id Env)
 
