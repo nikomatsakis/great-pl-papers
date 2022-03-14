@@ -1,5 +1,5 @@
 #lang racket
-(require redex/reduction-semantics "grammar.rkt" "env.rkt" "typing.rkt" "user-ty.rkt")
+(require redex/reduction-semantics "../grammar.rkt" "../env.rkt" "../typing.rkt" "../user-ty.rkt")
 
 (module+ test
   (redex-let*

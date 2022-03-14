@@ -171,7 +171,80 @@
 (define-metafunction simple-sub
   instantiate-at-or-above : Env Level Ty -> (Env Ty)
 
+  [(instantiate-at-or-above Env Level Ty)
+   (Env_out Ty_out)
+   (where/error (Env_out _ Ty_out) (instantiate-ty-at-or-above Env Level () Ty))
+   ]
   )
+
+(define-metafunction simple-sub
+  instantiate-ty-at-or-above : Env Level IdPairs Ty -> (Env IdPairs Ty)
+
+  ;; Simple structural recursion
+
+  [(instantiate-ty-at-or-above Env Level IdPairs Int)
+   (Env IdPairs Int)
+   ]
+
+  [(instantiate-ty-at-or-above Env Level IdPairs (Ty_arg -> Ty_ret))
+   (Env_ret IdPairs_ret (Ty_arg1 -> Ty_ret1))
+   (where/error (Env_arg IdPairs_arg Ty_arg1) (instantiate-ty-at-or-above Env Level IdPairs Ty_arg))
+   (where/error (Env_ret IdPairs_ret Ty_ret1) (instantiate-ty-at-or-above Env_arg Level IdPairs_arg Ty_ret))
+   ]
+
+  [(instantiate-ty-at-or-above Env Level IdPairs (Cons Ty_car Ty_cdr))
+   (Env_cdr IdPairs_cdr (Cons Ty_car1 Ty_cdr1))
+   (where/error (Env_car IdPairs_car Ty_car1) (instantiate-ty-at-or-above Env Level IdPairs Ty_car))
+   (where/error (Env_cdr IdPairs_cdr Ty_cdr1) (instantiate-ty-at-or-above Env_car Level IdPairs_car Ty_cdr))
+   ]
+
+  ;; Variables
+
+  [; detect cyclic types and re-use the new variable
+   (instantiate-ty-at-or-above Env Level IdPairs Id)
+   (Env IdPairs Id_1)
+   (where (_ ... (Id Id_1) _ ...) IdPairs)
+   ]
+
+  [; detect variables that are of lower level
+   (instantiate-ty-at-or-above Env Level IdPairs Id)
+   (Env IdPairs Id)
+   (where/error Level_id (level-of-var-in-env Env Id))
+   (where #t (level-below Level_id Level))
+   ]
+
+  [; variables at Level of above have to be cloned
+   (instantiate-ty-at-or-above Env Level (IdPair ...) Id)
+   (Env_upper IdPairs_upper Id_clone)
+   (where/error (Id Level_id Tys_lower Tys_upper) (var-def-in-env Env Id))
+   (where #f (level-below Level_id Level))
+   (where/error (Id_clone Env_clone) (env-with-fresh-var Env))
+   (where/error IdPairs_clone ((Id Id_clone) IdPair ...))
+   (where/error (Env_lower IdPairs_lower)
+                (instantiate-bounds-at-or-above Env_clone Level IdPairs_clone Id Id_clone + Tys_lower))
+   (where/error (Env_upper IdPairs_upper)
+                (instantiate-bounds-at-or-above Env_lower Level IdPairs_lower Id Id_clone - Tys_upper))
+   ]
+
+
+  )
+
+(define-metafunction simple-sub
+  instantiate-bounds-at-or-above : Env Level IdPairs Id Id_clone Polarity Tys -> (Env IdPairs)
+
+  [(instantiate-bounds-at-or-above Env Level IdPairs Id Id_clone Polarity ())
+   (Env IdPairs)
+   ]
+
+  [(instantiate-bounds-at-or-above Env Level IdPairs Id Id_clone Polarity (Ty_next Ty_rest ...))
+   (instantiate-bounds-at-or-above Env_2 Level IdPairs_1 Id Id_clone Polarity (Ty_rest ...))
+
+   (where/error (Env_1 IdPairs_1 Ty_next1) (instantiate-ty-at-or-above Env Level IdPairs Ty_next))
+   (where/error Env_2 (env-with-fresh-bound Env_1 (appropriate-bound Polarity Id_clone Ty_next1)))
+   ]
+
+  )
+
 
 (module+ test
 
@@ -289,7 +362,32 @@
     (test-equal (term (var-def-in-env Env_e X4))
                 (term (X4 (L 0) () (X3 X2))))
     )
+
+   (; instance X in L0
+    redex-let*
+    simple-sub
+    [(Env_6 (term (env-with-adjusted-level Env_5 -1)))
+     ((Env_e X2) (term (instantiate-at-or-above Env_6 (L 0) Id_x)))]
+
+    (test-equal (term (var-def-in-env Env_e X2))
+                (term (X2 (L 0) () (X3))))
+    (test-equal (term (var-def-in-env Env_e X3))
+                (term (X3 (L 0) () (X2 Int))))
+    )
+
+   (; instance (X -> X1) in L0
+    redex-let*
+    simple-sub
+    [(Env_6 (term (env-with-adjusted-level Env_5 -1)))
+     ((Env_e (X2 -> X3)) (term (instantiate-at-or-above Env_6 (L 0) (Id_x -> Id_x1))))]
+
+    (test-equal (term (var-def-in-env Env_e X2))
+                (term (X2 (L 0) () (X3))))
+    (test-equal (term (var-def-in-env Env_e X3))
+                (term (X3 (L 0) () (X2 Int))))
+    )
    )
+
 
 
   )

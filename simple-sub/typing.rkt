@@ -31,8 +31,9 @@
    ]
 
   [(where (_ ... (Id (ForAll Level Ty)) _ ...) IdTys)
+   (where (Env_out Ty_out) (instantiate-at-or-above Env Level Ty))
    ---------------
-   (has-type IdTys Env Id Env (instantiate-at-or-above Level Ty))
+   (has-type IdTys Env Id Env_out Ty_out)
    ]
 
   [(has-type IdTys Env Expr_car Env_car Ty_car)
@@ -74,12 +75,11 @@
 
   [(where/error Env_let (env-with-adjusted-level Env +1))
    (where/error Level_let (level-of-env Env_let))
-   (where/error (Id_fresh Env_fresh) (env-with-fresh-var Env_let))
-   (has-type ((Id Id_fresh) IdTy ...) Env_fresh Expr_body Env_body Ty_body)
+   (has-type (IdTy ...) Env_let Expr_body Env_body Ty_body)
    (where/error Env_body-1 (env-with-adjusted-level Env_body -1))
-   (has-type ((Id (ForAll Level_let Id_fresh)) IdTy ...) Env_body-1 Expr_rest Env_rest Ty_rest)
+   (has-type ((Id (ForAll Level_let Ty_body)) IdTy ...) Env_body-1 Expr_rest Env_rest Ty_rest)
    ---------------
-   (has-type (IdTy ...) Env (Let Id = Expr_body in Expr_rest) Env_rest Ty_rest)
+   (has-type (IdTy ...) Env (let Id = Expr_body in Expr_rest) Env_rest Ty_rest)
    ]
   )
 
@@ -91,7 +91,7 @@
   [(constrain Env (Ty <= Ty)) Env]
 
   [(constrain Env ((Ty_arg0 -> Ty_ret0) <= (Ty_arg1 -> Ty_ret1)))
-   (constrain Env_arg (Ty_ret0 <= Ty_ret1) Env_ret)
+   (constrain Env_arg (Ty_ret0 <= Ty_ret1))
    (where Env_arg (constrain Env (Ty_arg1 <= Ty_arg0)))
    ]
 

@@ -13,7 +13,7 @@
         (Cons Expr Expr)         ; create a tuple
         (Car Expr)               ; get the first element from a tuple
         (Cdr Expr)               ; get the second element from a tuple
-        (Let Id = Expr in Expr)  ; create a binding; performs let generalization
+        (let Id = Expr in Expr)  ; create a binding; performs let generalization
         )
 
   ; UserTy: user-facing representation of a type.
