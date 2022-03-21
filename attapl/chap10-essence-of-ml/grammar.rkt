@@ -4,10 +4,6 @@
 
 (; Figure 10-1, page 392
  define-language ml
-  ; defining the set of constants 𝑄
-  (Qs ::= (Q ...))
-  (Q ::= (C number))
-
   (T ::=               ; expressions
      X                 ; identifier
      (λ Z T)           ; function
