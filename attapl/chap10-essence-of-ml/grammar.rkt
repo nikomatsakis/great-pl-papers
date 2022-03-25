@@ -14,7 +14,7 @@
   (vs ws ::= (v ...))
   (v w ::=
      z             ; variable
-     M             ; memory location
+     m             ; memory location
      (λ z t)       ; function
      number        ; special constant: zero arity :)
      )
@@ -42,14 +42,14 @@
 
   ; x, y: represent any kind of identifier
   (Xs Ys ::= (X ...))
-  (X Y ::= z M c)
+  (X Y ::= z m c)
 
   ; variable identifiers
   (z ::= variable-not-otherwise-mentioned)
 
   ; memory locations
-  (Ms ::= (M ...))
-  (M ::= variable-not-otherwise-mentioned)
+  (Ms ::= (m ...))
+  (m ::= variable-not-otherwise-mentioned)
 
   ; constants
   (c ::=
@@ -58,7 +58,7 @@
 
   ; stores
   (μ ::= (HeapCell ...))
-  (HeapCell ::= (M v))
+  (HeapCell ::= (m v))
 
   ; configuration
   (Configuration ::= (t / μ))

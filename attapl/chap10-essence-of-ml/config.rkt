@@ -15,14 +15,14 @@
 (define-metafunction ml
   heap-domain : μ -> Ms
 
-  [(heap-domain ((M v) ...)) (M ...)]
+  [(heap-domain ((m v) ...)) (m ...)]
   )
 
 (define-metafunction ml
   free-variables : Term -> (X ...)
 
   [(free-variables z) (z)]
-  [(free-variables M) (M)]
+  [(free-variables m) (m)]
 
   [; don't consider constants "free" (even though they technically are...
    (free-variables c) ()]
