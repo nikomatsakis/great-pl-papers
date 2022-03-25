@@ -25,7 +25,7 @@
   [(free-variables M) (M)]
 
   [; don't consider constants "free" (even though they technically are...
-   (free-variables C) ()]
+   (free-variables c) ()]
 
   [(free-variables (λ z t))
    ,(set-subtract (term (z_free-in-t ...)) (term (z)))

@@ -42,7 +42,7 @@
 
   ; x, y: represent any kind of identifier
   (Xs Ys ::= (X ...))
-  (X Y ::= z M C)
+  (X Y ::= z M c)
 
   ; variable identifiers
   (z ::= variable-not-otherwise-mentioned)
@@ -52,7 +52,7 @@
   (M ::= variable-not-otherwise-mentioned)
 
   ; constants
-  (C ::=
+  (c ::=
      number
      +)
 
