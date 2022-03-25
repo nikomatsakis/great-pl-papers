@@ -6,14 +6,14 @@
   closed-configuration? : Configuration -> boolean
 
   [(closed-configuration? (t / μ))
-   ,(subset? (term Xs) (term Ms))
+   ,(subset? (term Xs) (term ms))
    (where/error Xs (free-variables t))
-   (where/error Ms (heap-domain μ))
+   (where/error ms (heap-domain μ))
    ]
   )
 
 (define-metafunction ml
-  heap-domain : μ -> Ms
+  heap-domain : μ -> ms
 
   [(heap-domain ((m v) ...)) (m ...)]
   )

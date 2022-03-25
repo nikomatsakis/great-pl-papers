@@ -48,7 +48,7 @@
   (z ::= variable-not-otherwise-mentioned)
 
   ; memory locations
-  (Ms ::= (m ...))
+  (ms ::= (m ...))
   (m ::= variable-not-otherwise-mentioned)
 
   ; constants
