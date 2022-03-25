@@ -4,36 +4,51 @@
 
 (; Figure 10-1, page 392
  define-language ml
-  (T ::=               ; expressions
+  (t ::=               ; expressions
      X                 ; identifier
-     (λ Z T)           ; function
-     (T T)             ; application
-     (let Z = T in T)  ; local definition
+     (λ Z t)           ; function
+     (t t)             ; application
+     (let Z = t in t)  ; local definition
      )
 
-  ((Vs Ws) (V ...))
+  (Vs Ws ::= (V ...))
   (V W ::=
      Z             ; variable
      M             ; memory location
-     (λ Z T)       ; function
+     (λ Z t)       ; function
      number        ; special constant: zero arity :)
      )
 
+  #;(σ ::=                ; type scheme, from Figure 10-4
+       (∀ Xs [ C ] . T))
+
+  #;(C D ::=              ; constraint, from Figure 10-4
+       true
+       false
+       P Ts
+       (C ∧ C)
+       (∃ Xs . C)
+       (def x : σ in C)
+       (x ⪯ T)
+       )
+
   (EC ::=               ; Eval context (𝐸 in the text, but vscode gets grumpy)
       hole
-      (EC T)            ; Left side of an application
+      (EC t)            ; Left side of an application
       (V EC)            ; Right side of an application
-      (let Z = EC in T)
+      (let Z = EC in t)
       )
   (Term ::= any)
 
   ; x, y: represent any kind of identifier
+  (Xs Ys ::= (X ...))
   (X Y ::= Z M C)
 
   ; variable identifiers
   (Z ::= variable-not-otherwise-mentioned)
 
   ; memory locations
+  (Ms ::= (M ...))
   (M ::= variable-not-otherwise-mentioned)
 
   ; constants
@@ -46,11 +61,11 @@
   (HeapCell ::= (M V))
 
   ; configuration
-  (Configuration ::= (T μ))
+  (Configuration ::= (t / μ))
 
   #:binding-forms
-  (λ Z T #:refers-to Z)
-  (let Z = T in T #:refers-to Z)
+  (λ Z t #:refers-to Z)
+  (let Z = t in t #:refers-to Z)
   )
 
 

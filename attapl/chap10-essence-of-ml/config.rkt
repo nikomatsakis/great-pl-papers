@@ -3,7 +3,19 @@
 (provide )
 
 (define-metafunction ml
-  is-closed-configuration : Configuration -> boolean
+  closed-configuration? : Configuration -> boolean
+
+  [(closed-configuration? (t / μ))
+   ,(subset? (term Xs) (term Ms))
+   (where/error Xs (free-variables t))
+   (where/error Ms (heap-domain μ))
+   ]
+  )
+
+(define-metafunction ml
+  heap-domain : μ -> Ms
+
+  [(heap-domain ((M V) ...)) (M ...)]
   )
 
 (define-metafunction ml
@@ -15,17 +27,17 @@
   [; don't consider constants "free" (even though they technically are...
    (free-variables C) ()]
 
-  [(free-variables (λ Z T))
-   ,(set-subtract (term (Z_free-in-T ...)) (term (Z)))
-   (where/error (Z_free-in-T ...) (free-variables T))]
+  [(free-variables (λ Z t))
+   ,(set-subtract (term (Z_free-in-t ...)) (term (Z)))
+   (where/error (Z_free-in-t ...) (free-variables t))]
 
-  [(free-variables (let Z = T_1 in T_2))
+  [(free-variables (let Z = t_1 in t_2))
    ,(set-union
      (term (Z_free-in-T1 ...))
      (set-subtract (term (Z_free-in-T2 ...)) (term (Z)))
      )
-   (where/error (Z_free-in-T1 ...) (free-variables T_1))
-   (where/error (Z_free-in-T2 ...) (free-variables T_2))
+   (where/error (Z_free-in-T1 ...) (free-variables t_1))
+   (where/error (Z_free-in-T2 ...) (free-variables t_2))
    ]
 
   [(free-variables (Term ...))
@@ -38,9 +50,15 @@
 
   (redex-let*
    ml
-   ((T (term (let inc = (λ y ((+ 1) y)) in (other-fn1 (other-fn2 (inc 21)))))))
+   ((t (term (let inc = (λ y ((+ 1) y)) in (other-fn1 (other-fn2 (inc 21)))))))
    (test-equal
-    (term (free-variables T))
+    (term (free-variables t))
     (term (other-fn2 other-fn1)))
+   (test-equal
+    (term (closed-configuration? (t / ())))
+    #f)
+   (test-equal
+    (term (closed-configuration? (t / ((other-fn2 22) (other-fn1 23)))))
+    #t)
    )
   )
