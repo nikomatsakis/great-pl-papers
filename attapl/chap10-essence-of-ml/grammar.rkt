@@ -19,18 +19,38 @@
      number        ; special constant: zero arity :)
      )
 
-  #;(σ ::=                ; type scheme, from Figure 10-4
-       (∀ xs [ C ] . T))
+  (σ ::=                ; type scheme, from Figure 10-4
+     (∀ Xs [ C ] . T))
 
-  #;(C D ::=              ; constraint, from Figure 10-4
-       true
-       false
-       P Ts
-       (C ∧ C)
-       (∃ xs . C)
-       (def x : σ in C)
-       (x ⪯ T)
-       )
+  (C D ::=              ; constraint, from Figure 10-4
+     true
+     false
+     P
+     (C ∧ C)
+     (∃ Xs . C)
+     (def x : σ in C)
+     (x ⪯ T)
+     )
+
+  (P ::=              ; predicates
+     (T == T)         ; type equality
+     (T <= T)         ; subtyping
+     )
+
+  (T ::=              ; types
+     (T -> T)
+     int
+     X
+     )
+
+  (κ ::=              ; kinds
+     *
+     (κ -> κ)
+     )
+
+  (X ::=              ; type variables
+     variable-not-otherwise-mentioned
+     )
 
   (𝐸 ::=              ; Eval context
      hole
@@ -56,6 +76,14 @@
      number
      +)
 
+  (Γ ::=   ; type environment
+     ((x σ) ...)
+     )
+
+  (θ ::=                       ; type substitution
+     ((X T) ...)
+     )
+
   ; stores
   (μ ::= (HeapCell ...))
   (HeapCell ::= (m v))
@@ -67,5 +95,3 @@
   (λ z t #:refers-to z)
   (let z = t in t #:refers-to z)
   )
-
-
