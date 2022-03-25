@@ -15,34 +15,34 @@
 (define-metafunction ml
   heap-domain : μ -> Ms
 
-  [(heap-domain ((M V) ...)) (M ...)]
+  [(heap-domain ((M v) ...)) (M ...)]
   )
 
 (define-metafunction ml
   free-variables : Term -> (X ...)
 
-  [(free-variables Z) (Z)]
+  [(free-variables z) (z)]
   [(free-variables M) (M)]
 
   [; don't consider constants "free" (even though they technically are...
    (free-variables C) ()]
 
-  [(free-variables (λ Z t))
-   ,(set-subtract (term (Z_free-in-t ...)) (term (Z)))
-   (where/error (Z_free-in-t ...) (free-variables t))]
+  [(free-variables (λ z t))
+   ,(set-subtract (term (z_free-in-t ...)) (term (z)))
+   (where/error (z_free-in-t ...) (free-variables t))]
 
-  [(free-variables (let Z = t_1 in t_2))
+  [(free-variables (let z = t_1 in t_2))
    ,(set-union
-     (term (Z_free-in-T1 ...))
-     (set-subtract (term (Z_free-in-T2 ...)) (term (Z)))
+     (term (z_free-in-T1 ...))
+     (set-subtract (term (z_free-in-T2 ...)) (term (z)))
      )
-   (where/error (Z_free-in-T1 ...) (free-variables t_1))
-   (where/error (Z_free-in-T2 ...) (free-variables t_2))
+   (where/error (z_free-in-T1 ...) (free-variables t_1))
+   (where/error (z_free-in-T2 ...) (free-variables t_2))
    ]
 
   [(free-variables (Term ...))
-   ,(apply set-union (term ((Z ...) ...)))
-   (where/error ((Z ...) ...) ((free-variables Term) ...))]
+   ,(apply set-union (term ((z ...) ...)))
+   (where/error ((z ...) ...) ((free-variables Term) ...))]
 
   )
 

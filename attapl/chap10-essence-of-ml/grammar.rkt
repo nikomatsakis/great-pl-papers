@@ -6,16 +6,16 @@
  define-language ml
   (t ::=               ; expressions
      X                 ; identifier
-     (λ Z t)           ; function
+     (λ z t)           ; function
      (t t)             ; application
-     (let Z = t in t)  ; local definition
+     (let z = t in t)  ; local definition
      )
 
-  (Vs Ws ::= (V ...))
-  (V W ::=
-     Z             ; variable
+  (vs ws ::= (v ...))
+  (v w ::=
+     z             ; variable
      M             ; memory location
-     (λ Z t)       ; function
+     (λ z t)       ; function
      number        ; special constant: zero arity :)
      )
 
@@ -35,17 +35,17 @@
   (EC ::=               ; Eval context (𝐸 in the text, but vscode gets grumpy)
       hole
       (EC t)            ; Left side of an application
-      (V EC)            ; Right side of an application
-      (let Z = EC in t)
+      (v EC)            ; Right side of an application
+      (let z = EC in t)
       )
   (Term ::= any)
 
   ; x, y: represent any kind of identifier
   (Xs Ys ::= (X ...))
-  (X Y ::= Z M C)
+  (X Y ::= z M C)
 
   ; variable identifiers
-  (Z ::= variable-not-otherwise-mentioned)
+  (z ::= variable-not-otherwise-mentioned)
 
   ; memory locations
   (Ms ::= (M ...))
@@ -58,14 +58,14 @@
 
   ; stores
   (μ ::= (HeapCell ...))
-  (HeapCell ::= (M V))
+  (HeapCell ::= (M v))
 
   ; configuration
   (Configuration ::= (t / μ))
 
   #:binding-forms
-  (λ Z t #:refers-to Z)
-  (let Z = t in t #:refers-to Z)
+  (λ z t #:refers-to z)
+  (let z = t in t #:refers-to z)
   )
 
 
