@@ -32,12 +32,12 @@
        (x ⪯ T)
        )
 
-  (EC ::=               ; Eval context (𝐸 in the text, but vscode gets grumpy)
-      hole
-      (EC t)            ; Left side of an application
-      (v EC)            ; Right side of an application
-      (let z = EC in t)
-      )
+  (𝐸 ::=              ; Eval context
+     hole
+     (𝐸 t)            ; Left side of an application
+     (v 𝐸)            ; Right side of an application
+     (let z = 𝐸 in t)
+     )
   (Term ::= any)
 
   ; x, y: represent any kind of identifier

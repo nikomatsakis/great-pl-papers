@@ -9,17 +9,17 @@
    #:domain Configuration
 
    ; R-Beta
-   (--> ((in-hole EC ((λ z t) v)) / μ)
-        ((in-hole EC (substitute t z v)) / μ)
+   (--> ((in-hole 𝐸 ((λ z t) v)) / μ)
+        ((in-hole 𝐸 (substitute t z v)) / μ)
         "R-Beta")
 
    ; R-Let
-   (--> ((in-hole EC (let z = v in t)) / μ)
-        ((in-hole EC (substitute t z v)) / μ)
+   (--> ((in-hole 𝐸 (let z = v in t)) / μ)
+        ((in-hole 𝐸 (substitute t z v)) / μ)
         "R-Let")
 
    ; R-Delta: just hardcode some rules
-   (--> ((in-hole EC ((+ number_1) number_2)) / μ)
+   (--> ((in-hole 𝐸 ((+ number_1) number_2)) / μ)
         (,(+ (term number_1) (term number_2)) / μ)
         "R-Delta")
 
