@@ -5,7 +5,7 @@
 (; Figure 10-1, page 392
  define-language ml
   (t ::=               ; expressions
-     X                 ; identifier
+     x                 ; identifier
      (λ z t)           ; function
      (t t)             ; application
      (let z = t in t)  ; local definition
@@ -20,14 +20,14 @@
      )
 
   #;(σ ::=                ; type scheme, from Figure 10-4
-       (∀ Xs [ C ] . T))
+       (∀ xs [ C ] . T))
 
   #;(C D ::=              ; constraint, from Figure 10-4
        true
        false
        P Ts
        (C ∧ C)
-       (∃ Xs . C)
+       (∃ xs . C)
        (def x : σ in C)
        (x ⪯ T)
        )
@@ -41,8 +41,8 @@
   (Term ::= any)
 
   ; x, y: represent any kind of identifier
-  (Xs Ys ::= (X ...))
-  (X Y ::= z m c)
+  (xs ys ::= (x ...))
+  (x y ::= z m c)
 
   ; variable identifiers
   (z ::= variable-not-otherwise-mentioned)

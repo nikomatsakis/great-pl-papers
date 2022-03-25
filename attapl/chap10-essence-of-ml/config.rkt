@@ -6,8 +6,8 @@
   closed-configuration? : Configuration -> boolean
 
   [(closed-configuration? (t / μ))
-   ,(subset? (term Xs) (term ms))
-   (where/error Xs (free-variables t))
+   ,(subset? (term xs) (term ms))
+   (where/error xs (free-variables t))
    (where/error ms (heap-domain μ))
    ]
   )
@@ -19,7 +19,7 @@
   )
 
 (define-metafunction ml
-  free-variables : Term -> (X ...)
+  free-variables : Term -> (x ...)
 
   [(free-variables z) (z)]
   [(free-variables m) (m)]
